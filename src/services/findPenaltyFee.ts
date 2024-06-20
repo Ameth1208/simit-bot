@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer";
-import { IResponsePenalty } from "src/interfaces";
+import { formatCurrency } from "src/helpers";
+import { IResponsePenalty, IResponsePenaltyAll } from "src/interfaces";
 
 export async function findPenaltyApi(
   query: string
@@ -48,17 +49,69 @@ export async function findPenaltyApi(
       };
     });
 
+    const content: IResponsePenaltyAll[] = await page.evaluate((selector) => {
+      const rows = Array.from(
+        document.querySelectorAll(`${selector} tbody tr`)
+      );
+      return rows.map((row: any) => {
+        const type = row
+          .querySelector("td[data-label='Tipo']")
+          .innerText.trim();
+        const notification = row
+          .querySelector("td[data-label='Notificación']")
+          .innerText.trim();
+        const licensePlate = row
+          .querySelector("td[data-label='Placa']")
+          .innerText.trim();
+        const secretary = row
+          .querySelector("td[data-label='Secretaría']")
+          .innerText.trim();
+        const infraction = row
+          .querySelector("td[data-label='Infracción']")
+          .innerText.trim();
+        const status = row
+          .querySelector("td[data-label='Estado']")
+          .innerText.trim();
+        const value = row
+          .querySelector("td[data-label='Valor']")
+          .innerText.trim();
+        const payableValue = row
+          .querySelector("td[data-label='Valor a pagar']")
+          .innerText.trim();
+
+        const regex = /[\d.,]+/g;
+        const payableValueOnly = payableValue.match(regex)?.join("") || "0";
+        const typeOnly = `${type.split("\n\n")[0]} ${type.split("\n\n")[1]}`;
+        let secretaryOnly = `${secretary.split("\n\n")[0]} ${
+          secretary.split("\n\n")[1]
+        }`;
+
+        let valueOnly = value.split("\n\n")[0];
+        let interes = value.split("\n\n")[1];
+        return {
+          type: typeOnly,
+          notification,
+          licensePlate,
+          secretary: secretaryOnly,
+          infraction,
+          status,
+          value: valueOnly,
+          interes,
+          payableValue: payableValueOnly,
+        };
+      });
+    }, selectorTabla);
+
     // Verifica si se encontraron tickets o multas
     if (resumenDetails.tickets === "0" && resumenDetails.fines === "0") {
       await browser.close();
       return "No encontramos ningún comparendo o multa.";
     }
 
-    console.log(resumenDetails);
     await browser.close();
-    return resumenDetails;
+    return { resumenDetails, content };
   } catch (error) {
-    console.error("Error al encontrar la penalización: ", error);
-    return "Ocurrió un error al intentar encontrar comparendos o multas.";
+    // console.error("Error al encontrar la penalización: ", error);
+    return "No encontramos ningún comparendo o multa";
   }
 }

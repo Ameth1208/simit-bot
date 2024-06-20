@@ -12,8 +12,8 @@
   },
   "keywords": [],
   "dependencies": {
-    "@builderbot/bot": "dev",
-    "@builderbot/provider-baileys": "dev",
+    "@builderbot/bot": "latest",
+    "@builderbot/provider-baileys": "latest",
     "nodemon": "^3.1.0",
     "puppeteer": "^22.6.1"
   },
@@ -22,7 +22,7 @@
     "@types/puppeteer": "^7.0.4",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "eslint": "^8.52.0",
-    "eslint-plugin-builderbot": "dev",
+    "eslint-plugin-builderbot": "latest",
     "rollup": "^4.10.0",
     "rollup-plugin-typescript2": "^0.36.0",
     "tsx": "^4.7.1"

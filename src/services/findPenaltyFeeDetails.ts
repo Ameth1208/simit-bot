@@ -46,20 +46,29 @@ export async function findPenaltyDetailsApi(query: string) {
           .querySelector("td[data-label='Valor a pagar']")
           .innerText.trim();
 
+        const regex = /[\d.,]+/g;
+        const payableValueOnly = payableValue.match(regex)?.join("") || "0";
+        const typeOnly = `${type.split("\n\n")[0]} ${type.split("\n\n")[1]}`;
+        let secretaryOnly = `${secretary.split("\n\n")[0]} ${
+          secretary.split("\n\n")[1]
+        }`;
+
+        let valueOnly = value.split("\n\n")[0];
+        let interes = value.split("\n\n")[1];
         return {
-          type,
+          type: typeOnly,
           notification,
           licensePlate,
-          secretary,
+          secretary: secretaryOnly,
           infraction,
           status,
-          value,
-          payableValue,
+          value: valueOnly,
+          interes,
+          payableValue: payableValueOnly,
         };
       });
     }, selectorTabla);
 
-    console.log(content);
     await browser.close();
     return content;
   } catch (error) {

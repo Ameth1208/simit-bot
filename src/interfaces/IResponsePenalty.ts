@@ -6,6 +6,7 @@ export interface IResponsePenaltyAll {
   infraction?: string;
   status?: string;
   value?: string;
+  interes: string;
   payableValue?: string;
 }
 
