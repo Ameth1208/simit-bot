@@ -1,4 +1,4 @@
-export class setContext {
+class setContext {
   /**@type {setContext} */
   static instance;
   /**@type {Map} */
@@ -29,3 +29,5 @@ export class setContext {
     return this.flowContext.delete(key);
   }
 }
+
+export const botContext = setContext.getInstance();

@@ -1,6 +1,6 @@
 import { addKeyword } from "@builderbot/bot";
-import { setContext } from "src/helpers";
-import { findPenaltyDetailsApi } from "src/services/findPenaltyFeeDetails";
+import { botContext } from "../helpers";
+import { IMultas } from "../interfaces";
 
 export const flowFindPenaltyDetails = addKeyword(
   "FLOW_FIND_PENALTY_DETAILS"
@@ -17,10 +17,16 @@ export const flowFindPenaltyDetails = addKeyword(
     const res = ctx.body;
     switch (res) {
       case "1":
-        const { content } = await setContext.getInstance().get(ctx.from);
-        const response = content;
-        for (let item of response) {
-          await flowDynamic(`*Tipo:* ${item.type}\n*Notificación:* ${item.notification}\n*Placa:* ${item.licensePlate}\n*Secretaría:* ${item.secretary}\n*Infracción:* ${item.infraction}\n*Estado:* ${item.status}\n*Valor:* ${item.value}\n*Valor a pagar:* ${item.payableValue}
+        const { content } = await botContext.get(ctx.from);
+        const multas: IMultas[] = content;
+        for (let item of multas) {
+          await flowDynamic(`*Tipo:* ${
+            item.infracciones[0].codigoInfraccion
+          }\n*Placa:* ${item.placa}\n*Secretaría:* ${
+            item.departamento + " " + item.organismoTransito
+          }\n*Infracción:* ${
+            item.infracciones[0].descripcionInfraccion
+          }\n*Valor:* ${item.valor}\n*Valor a pagar:* ${item.valorPagar}
           `);
         }
 
@@ -30,7 +36,7 @@ export const flowFindPenaltyDetails = addKeyword(
         return;
 
       default:
-        await fallBack("No te he entendido 🤕");
+        fallBack("No te he entendido 🤕");
         return;
     }
   }

@@ -1,7 +1,7 @@
 import { addKeyword } from "@builderbot/bot";
-import { findPenaltyApi } from "src/services";
-import { flowFindPenaltyDetails } from "./flowFindPenaltyDetails";
-import { setContext } from "src/helpers";
+import { findPenaltyApi } from "../services";
+import { ISimit } from "../interfaces";
+import { botContext, formatCurrency } from "../helpers";
 
 export const flowFindPenalty = addKeyword("FLOW_FIND_PENALTY").addAnswer(
   [
@@ -16,21 +16,24 @@ export const flowFindPenalty = addKeyword("FLOW_FIND_PENALTY").addAnswer(
     await flowDynamic(
       "🤖 ¡Estoy buscando la información relacionada con tu consulta! Esto solo tomará unos segundos, por favor, mantente atento.\n\n¡Gracias por tu paciencia!"
     );
-    let response = await findPenaltyApi(ctx.body);
+    let { multas, totalGeneral, totalAcuerdosPagar }: ISimit =
+      await findPenaltyApi(ctx.body);
 
-    if (
-      response.resumenDetails.tickets === "0" ||
-      response.resumenDetails.fines == "0"
-    ) {
-      await setContext
-        .getInstance()
-        .add(ctx.from, { placa: ctx.body, content: response.content });
+    if (multas.length > 0) {
+      await botContext.add(ctx.from, {
+        placa: ctx.body,
+        content: multas,
+      });
       await flowDynamic(
-        `Usted tiene\n\n*Comparendos:* ${response.resumenDetails.tickets}\n*Multas:* ${response.resumenDetails.fines}\n*Acuerdos de pago:* ${response.resumenDetails.paymentAgreements}\n*Total a pagar:* $${response.resumenDetails.totalAmount}`
+        `Usted tiene\n\n*Comparendos:* ${multas.length}\n*Multas:* ${
+          multas.length
+        }\n*Acuerdos de pago:* ${totalAcuerdosPagar}\n*Total a pagar:* $${formatCurrency(
+          totalGeneral
+        )}`
       );
-      await gotoFlow(flowFindPenaltyDetails);
+      // await gotoFlow(flowFindPenaltyDetails);
     } else {
-      await endFlow(response);
+      endFlow("Usted no tiene comparendos o multas");
     }
   }
 );
